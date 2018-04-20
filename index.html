@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="vi" id="facebook" class="no_js">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="referrer" content="default" id="meta_referrer"/>
+    <script>window._cstart = +new Date();</script>
+    <script>function envFlush(a) {
+        function b(c) {
+            for (var d in a) c[d] = a[d]
+        }
+
+        if (window.requireLazy) window.requireLazy(["Env"], b); else {
+            window.Env = window.Env || {};
+            b(window.Env)
+        }
+    }
+
+    envFlush({
+        "ajaxpipe_token": "AXg1DDbhBCn8CYg-",
+        "timeslice_heartbeat_config": {
+            "pollIntervalMs": 33,
+            "idleGapThresholdMs": 60,
+            "ignoredTimesliceNames": {
+                "requestAnimationFrame": true,
+                "Event listenHandler mousemove": true,
+                "Event listenHandler mouseover": true,
+                "Event listenHandler mouseout": true,
+                "Event listenHandler scroll": true
+            },
+            "isHeartbeatEnabled": true,
+            "isArtilleryOn": false
+        },
+        "shouldLogCounters": true,
+        "timeslice_categories": {"react_render": true, "reflow": true},
+        "sample_continuation_stacktraces": true,
+        "timesliceBufferSize": 5000
+    });</script>
+    <style></style>
+    <script>__DEV__ = 0;
+    CavalryLogger = window.CavalryLogger || function (a) {
+        this.lid = a;
+        this.transition = false;
+        this.metric_collected = false;
+        this.is_detailed_profiler = false;
+        this.instrumentation_started = false;
+        this.pagelet_metrics = {};
+        this.events = {};
+        this.ongoing_watch = {};
+        this.values = {t_cstart: window._cstart};
+        this.piggy_values = {};
+        this.bootloader_metrics = {};
+        this.resource_to_pagelet_mapping = {};
+        this.e2eLogged = false;
+        if (this.initializeInstrumentation) this.initializeInstrumentation()
+    };
+    CavalryLogger.prototype.setIsDetailedProfiler = function (a) {
+        this.is_detailed_profiler = a;
+        return this
+    };
+    CavalryLogger.prototype.setTTIEvent = function (a) {
+        this.tti_event = a;
+        return this
+    };
+    CavalryLogger.prototype.setValue = function (a, b, c, d) {
+        var e = d ? this.piggy_values : this.values;
+        if (typeof e[a] == "undefined" || c) e[a] = b;
+        return this
+    };
+    CavalryLogger.prototype.getLastTtiValue = function () {
+        return this.lastTtiValue
+    };
+    CavalryLogger.prototype.setTimeStamp = CavalryLogger.prototype.setTimeStamp || function (a, b, c, d) {
+        this.mark(a);
+        var e = this.values.t_cstart || this.values.t_start, f = d ? e + d : CavalryLogger.now();
+        this.setValue(a, f, b, c);
+        if (this.tti_event && a == this.tti_event) {
+            this.lastTtiValue = f;
+            this.setTimeStamp("t_tti", b)
+        }
+        return this
+    };
+    CavalryLogger.prototype.mark = typeof console === "object" && console.timeStamp ? function (a) {
+        console.timeStamp(a)
+    } : function () {
+    };
+    CavalryLogger.prototype.addPiggyback = function (a, b) {
+        this.piggy_values[a] = b;
+        return this
+    };
+    CavalryLogger.instances = {};
+    CavalryLogger.id = 0;
+    CavalryLogger.perfNubMarkup = "";
+    CavalryLogger.disableArtilleryOnUntilOffLogging = false;
+    CavalryLogger.getInstance = function (a) {
+        if (typeof a == "undefined") a = CavalryLogger.id;
+        if (!CavalryLogger.instances[a]) CavalryLogger.instances[a] = new CavalryLogger(a);
+        return CavalryLogger.instances[a]
+    };
+    CavalryLogger.setPageID = function (a) {
+        if (CavalryLogger.id === 0) {
+            var b = CavalryLogger.getInstance();
+            CavalryLogger.instances[a] = b;
+            CavalryLogger.instances[a].lid = a;
+            delete CavalryLogger.instances[0]
+        }
+        CavalryLogger.id = a
+    };
+    CavalryLogger.setPerfNubMarkup = function (a) {
+        CavalryLogger.perfNubMarkup = a
+    };
+    CavalryLogger.now = function () {
+        if (window.performance && performance.timing && performance.timing.navigationStart && performance.now) return performance.now() + performance.timing.navigationStart;
+        return new Date().getTime()
+    };
+    CavalryLogger.prototype.measureResources = function () {
+    };
+    CavalryLogger.prototype.profileEarlyResources = function () {
+    };
+    CavalryLogger.getBootloaderMetricsFromAllLoggers = function () {
+    };
+    CavalryLogger.start_js = function () {
+    };
+    CavalryLogger.done_js = function () {
+    };
+    CavalryLogger.getInstance().setTTIEvent("t_domcontent");
+    CavalryLogger.prototype.measureResources = function (a, b) {
+        if (!this.log_resources) return;
+        var c = "bootload/" + a.name;
+        if (this.bootloader_metrics[c] !== undefined || this.ongoing_watch[c] !== undefined) return;
+        var d = CavalryLogger.now();
+        this.ongoing_watch[c] = d;
+        if (!("start_" + c in this.bootloader_metrics)) this.bootloader_metrics["start_" + c] = d;
+        if (b && !("tag_" + c in this.bootloader_metrics)) this.bootloader_metrics["tag_" + c] = b;
+        if (a.type === "js") {
+            var e = "js_exec/" + a.name;
+            this.ongoing_watch[e] = d
+        }
+    };
+    CavalryLogger.prototype.stopWatch = function (a) {
+        if (this.ongoing_watch[a]) {
+            var b = CavalryLogger.now(), c = b - this.ongoing_watch[a];
+            this.bootloader_metrics[a] = c;
+            var d = this.piggy_values;
+            if (a.indexOf("bootload") === 0) {
+                if (!d.t_resource_download) d.t_resource_download = 0;
+                if (!d.resources_downloaded) d.resources_downloaded = 0;
+                d.t_resource_download += c;
+                d.resources_downloaded += 1;
+                if (d["tag_" + a] == "_EF_") d.t_pagelet_cssload_early_resources = b
+            }
+            delete this.ongoing_watch[a]
+        }
+        return this
+    };
+    CavalryLogger.getBootloaderMetricsFromAllLoggers = function () {
+        var a = {};
+        Object.values(window.CavalryLogger.instances).forEach(function (b) {
+            if (b.bootloader_metrics) Object.assign(a, b.bootloader_metrics)
+        });
+        return a
+    };
+    CavalryLogger.start_js = function (a) {
+        for (var b = 0; b < a.length; ++b) CavalryLogger.getInstance().stopWatch("js_exec/" + a[b])
+    };
+    CavalryLogger.done_js = function (a) {
+        for (var b = 0; b < a.length; ++b) CavalryLogger.getInstance().stopWatch("bootload/" + a[b])
+    };
+    CavalryLogger.prototype.profileEarlyResources = function (a) {
+        for (var b = 0; b < a.length; b++) this.measureResources({name: a[b][0], type: a[b][1] ? "js" : ""}, "_EF_")
+    };
+    CavalryLogger.getInstance().log_resources = true;
+    CavalryLogger.getInstance().setIsDetailedProfiler(true);
+    window.CavalryLogger && CavalryLogger.getInstance().setTimeStamp("t_start");</script>
+    <noscript>
+        <meta http-equiv="refresh" content="0; URL=/unsupportedbrowser?_fb_noscript=1"/>
+    </noscript>
+    <title id="pageTitle">Lỗi</title>
+    <link rel="shortcut icon" href="https://static.xx.fbcdn.net/rsrc.php/v3/yz/r/1nC_5Z_l4aq.png"/>
+    <link type="text/css" rel="stylesheet" href="https://static.xx.fbcdn.net/rsrc.php/v3/yz/l/0,cross/mr8lD4N2X1P.css"
+          data-bootloader-hash="XHPBm" crossorigin="anonymous"/>
+    <link type="text/css" rel="stylesheet" href="https://static.xx.fbcdn.net/rsrc.php/v3/yM/l/0,cross/KcaFcyE8Mhz.css"
+          data-bootloader-hash="raNLk" data-permanent="1" crossorigin="anonymous"/>
+    <link type="text/css" rel="stylesheet" href="https://static.xx.fbcdn.net/rsrc.php/v3/yb/l/0,cross/E_qlvWjqC_7.css"
+          data-bootloader-hash="UeGJv" data-permanent="1" crossorigin="anonymous"/>
+    <script src="https://static.xx.fbcdn.net/rsrc.php/v3/yW/r/oIrwLkUpjM0.js" data-bootloader-hash="S26wU"
+            crossorigin="anonymous"></script>
+    <script>requireLazy(["gkx"], function (gkx) {
+        gkx.add({
+            "AT4kYIk7PhRqUACJJM8qs58t-WNCoM2ZYe35b1xv03xf3OtmC7RfXVIT9hWB6yTOgfA": {
+                "result": false,
+                "hash": "AT7vM8vsvSdQS5TX"
+            },
+            "AT6ospK-Tdqu5qRhy-TcAU0nIA_ctyO-ghWqmAEjf7bDt3FzGNFL8C4Kn6qbsJrp6oPJYeq6bUEntlvCEgoH4eYQlTJ0DsJar1ZABa0GLxyieQ": {
+                "result": false,
+                "hash": "AT4BWmKrdW0KcaM4"
+            },
+            "AT7IsskI4XB9V3_ZpKFnRxAvs6BVPIgSDbDcq24b8ToUAOY2pCaSzuagN7f_cNx9vGp7vgNftn1_SRfogFUNGS0K": {
+                "result": false,
+                "hash": "AT4gRKM46JPyyNr2"
+            },
+            "AT52sTP_5lkBPKbNz2mUZWsbcEDkBzQg0lQckIsVf32rCwFPbCAUTv2-qAeYwt3QMKM": {
+                "result": false,
+                "hash": "AT5mDOYDX6RLsHh5"
+            },
+            "AT6Afdq0Tt2jEesGOMGnSRKoZIl2eQfQBS7ISXiYFG3RHN4ykkPiZeyWuKALtD0ObEVGeeZuAFKdYpfxlBzUUPkd": {
+                "result": false,
+                "hash": "AT6Eol9vnvqi27Wc"
+            },
+            "AT68bJwSI-83elN-7JSMMH9zt32KbiF6pW-XMlf6NViAJ3CbAk_16Vq8cK1tl1029_ApvFwINR8hmoci3nMKFTDhDCBp1wrvYQbOKq0pCjZpqA": {
+                "result": false,
+                "hash": "AT5UjF4puDpXZV5r"
+            },
+            "AT6DanO60hgFT7juQEF_b5acv5amdrLzodvaFbz5tWF8DGQCmmf0_a7wsRZnn4yNp9kI3S6KXc87dzKSPpUSy11k": {
+                "result": false,
+                "hash": "AT6R3K4ZAk4JR3l8"
+            }
+        });
+    });
+    require("TimeSlice").guard(function () {
+        (require("ServerJSDefine")).handleDefines([["DataStoreConfig", [], {"useExpando": false}, 2915], ["LinkReactUnsafeHrefConfig", [], {"LinkHrefChecker": null}, 1182], ["LinkshimHandlerConfig", [], {
+            "supports_meta_referrer": false,
+            "default_meta_referrer_policy": "default",
+            "switched_meta_referrer_policy": "origin",
+            "link_react_default_hash": "ATN9Vtk00O8OM47M80YuRIcbCb4VN2yvDVhD84kWeZuV3cEa_a2X1b31Sx39Yrzf9yRvM1o0enHtUq6G5OHKbfRcmiJqVrNfcJg-AA",
+            "untrusted_link_default_hash": "ATMdUtVNw_USpx9hUHl98gEELkLQlGFsKRfewPKDYyJ7eM5bZDAiaJQoOSHtUXVeL6oPMiRhu2M8_eWKk4U0Z8ZZTSUEGWusMDEUDg",
+            "linkshim_host": "l.facebook.com",
+            "use_rel_no_opener": false,
+            "always_use_https": false,
+            "onion_always_shim": true,
+            "middle_click_requires_event": false
+        }, 27], ["BootloaderConfig", [], {
+            "jsRetries": null,
+            "jsRetryAbortNum": 2,
+            "jsRetryAbortTime": 5,
+            "payloadEndpointURI": "https:\/\/www.accountkit.com\/ajax\/haste-response\/",
+            "assumeNotNonblocking": false,
+            "assumePermanent": false,
+            "skipEndpoint": true
+        }, 329], ["CSSLoaderConfig", [], {
+            "timeout": 5000,
+            "modulePrefix": "BLCSS:"
+        }, 619], ["CurrentCommunityInitialData", [], {}, 490], ["CurrentUserInitialData", [], {
+            "USER_ID": "0",
+            "ACCOUNT_ID": "0",
+            "NAME": "",
+            "SHORT_NAME": null,
+            "IS_MESSENGER_ONLY_USER": false
+        }, 270], ["DTSGInitialData", [], {}, 258], ["ISB", [], {}, 330], ["LSD", [], {}, 323], ["SiteData", [], {
+            "server_revision": 3667839,
+            "client_revision": 3667839,
+            "tier": "",
+            "push_phase": "C3",
+            "pkg_cohort": "PHASED:DEFAULT",
+            "pkg_cohort_key": "__pc",
+            "haste_site": "www",
+            "be_mode": -1,
+            "be_key": "__be",
+            "is_rtl": false,
+            "vip": "31.13.95.8"
+        }, 317], ["SprinkleConfig", [], {"param_name": "jazoest"}, 2111], ["CoreWarningGK", [], {"forceWarning": false}, 725], ["BanzaiConfig", [], {
+            "EXPIRY": 86400000,
+            "MAX_SIZE": 10000,
+            "MAX_WAIT": 150000,
+            "RESTORE_WAIT": 150000,
+            "blacklist": ["time_spent"],
+            "gks": {
+                "boosted_component": true,
+                "boosted_pagelikes": true,
+                "jslogger": true,
+                "mercury_send_error_logging": true,
+                "platform_oauth_client_events": true,
+                "visibility_tracking": true,
+                "graphexplorer": true,
+                "gqls_web_logging": true,
+                "sticker_search_ranking": true
+            }
+        }, 7], ["UserAgentData", [], {
+            "browserArchitecture": "32",
+            "browserFullVersion": null,
+            "browserMinorVersion": null,
+            "browserName": "Unknown",
+            "browserVersion": null,
+            "deviceName": "Unknown",
+            "engineName": "Unknown",
+            "engineVersion": null,
+            "platformArchitecture": "32",
+            "platformName": "Unknown",
+            "platformVersion": null,
+            "platformFullVersion": null
+        }, 527], ["ZeroRewriteRules", [], {
+            "rewrite_rules": {},
+            "whitelist": {
+                "\/hr\/r": 1,
+                "\/hr\/p": 1,
+                "\/zero\/unsupported_browser\/": 1,
+                "\/zero\/policy\/optin": 1,
+                "\/zero\/optin\/write\/": 1,
+                "\/zero\/optin\/legal\/": 1,
+                "\/zero\/optin\/free\/": 1,
+                "\/about\/privacy\/": 1,
+                "\/zero\/toggle\/welcome\/": 1,
+                "\/work\/landing": 1,
+                "\/work\/login\/": 1,
+                "\/work\/email\/": 1,
+                "\/ai.php": 1,
+                "\/js_dialog_resources\/dialog_descriptions_android.json": 1,
+                "\/connect\/jsdialog\/MPlatformAppInvitesJSDialog\/": 1,
+                "\/connect\/jsdialog\/MPlatformOAuthShimJSDialog\/": 1,
+                "\/connect\/jsdialog\/MPlatformLikeJSDialog\/": 1,
+                "\/qp\/interstitial\/": 1,
+                "\/qp\/action\/redirect\/": 1,
+                "\/qp\/action\/close\/": 1,
+                "\/zero\/support\/ineligible\/": 1,
+                "\/zero_balance_redirect\/": 1,
+                "\/zero_balance_redirect": 1,
+                "\/l.php": 1,
+                "\/lsr.php": 1,
+                "\/ajax\/dtsg\/": 1,
+                "\/checkpoint\/block\/": 1,
+                "\/exitdsite": 1,
+                "\/zero\/balance\/pixel\/": 1,
+                "\/zero\/balance\/": 1,
+                "\/zero\/balance\/carrier_landing\/": 1,
+                "\/tr": 1,
+                "\/tr\/": 1,
+                "\/sem_campaigns\/sem_pixel_test\/": 1,
+                "\/bookmarks\/flyout\/body\/": 1,
+                "\/zero\/subno\/": 1,
+                "\/confirmemail.php": 1,
+                "\/policies\/": 1
+            }
+        }, 1478], ["AsyncRequestConfig", [], {
+            "retryOnNetworkError": "1",
+            "logAsyncRequest": false,
+            "immediateDispatch": false,
+            "useFetchStreamAjaxPipeTransport": false
+        }, 328], ["PromiseUsePolyfillSetImmediateGK", [], {"www_always_use_polyfill_setimmediate": false}, 2190], ["TimeSliceInteractionSV", [], {
+            "on_demand_reference_counting": true,
+            "on_demand_profiling_counters": true,
+            "default_rate": 1000,
+            "lite_default_rate": 100,
+            "interaction_to_coinflip": {
+                "ADS_INTERFACES_INTERACTION": 1,
+                "ads_perf_scenario": 1,
+                "ads_wait_time": 1,
+                "async_request": 0,
+                "video_psr": 1000000,
+                "video_stall": 2500000,
+                "snowlift_open_autoclosed": 0,
+                "Event": 100,
+                "cms_editor": 1,
+                "page_messaging_shortlist": 1,
+                "ffd_chart_loading": 1,
+                "pixelcloud_view_performance": 25,
+                "internsearch_initial_page_load": 1,
+                "tasks_initial_page_load": 10,
+                "tasks_initial_page_load_modern": 10,
+                "watch_carousel_left_scroll": 1,
+                "watch_carousel_right_scroll": 1,
+                "watch_sections_load_more": 1,
+                "watch_discover_scroll": 1,
+                "fbpkg_ui": 1,
+                "sevmanager_powersearch_initial_page_load": 10,
+                "backbone_ui": 1
+            },
+            "interaction_to_lite_coinflip": {
+                "ADS_INTERFACES_INTERACTION": 0,
+                "ads_perf_scenario": 0,
+                "ads_wait_time": 0,
+                "Event": 1,
+                "video_psr": 0,
+                "video_stall": 0
+            },
+            "enable_heartbeat": true,
+            "maxBlockMergeDuration": 0,
+            "maxBlockMergeDistance": 0,
+            "user_timing_coinflip": 50,
+            "enable_banzai_stream": true,
+            "banzai_stream_coinflip": 1,
+            "compression_enabled": true,
+            "ref_counting_fix": true,
+            "ref_counting_cont_fix": false,
+            "also_record_new_timeslice_format": false
+        }, 2609], ["SessionNameConfig", [], {"seed": "0XKX"}, 757], ["ZeroCategoryHeader", [], {}, 1127], ["TrackingConfig", [], {"domain": "https:\/\/pixel.accountkit.com"}, 325], ["KSConfig", [], {"killed": {"__set": ["POCKET_MONSTERS_CREATE", "POCKET_MONSTERS_DELETE", "VIDEO_DIMENSIONS_FROM_PLAYER_IN_UPLOAD_DIALOG", "PREVENT_INFINITE_URL_REDIRECT", "POCKET_MONSTERS_UPDATE_NAME"]}}, 2580], ["ErrorSignalConfig", [], {"uri": "https:\/\/www.accountkit.com\/common\/scribe_endpoint.php"}, 319], ["ServerNonce", [], {"ServerNonce": "W00_7ibAPTtqfCvh1mrVNd"}, 141], ["HotReloadConfig", [], {"isEnabled": false}, 2649], ["ReactFiberErrorLoggerConfig", [], {
+            "bugNubClickTargetClassName": null,
+            "enableDialog": false
+        }, 2115], ["ServiceWorkerBackgroundSyncBanzaiGK", [], {"sw_background_sync_banzai": false}, 1621], ["CookieCoreConfig", [], {}, 2104], ["FbtLogger", [], {"logger": null}, 288], ["FbtResultGK", [], {
+            "shouldReturnFbtResult": true,
+            "inlineMode": "NO_INLINE"
+        }, 876], ["IntlHoldoutGK", [], {"inIntlHoldout": false}, 2827], ["IntlViewerContext", [], {"GENDER": 3}, 772], ["NumberFormatConfig", [], {
+            "decimalSeparator": ",",
+            "numberDelimiter": ".",
+            "minDigitsForThousandsSeparator": 4,
+            "switchImplementationGK": true,
+            "standardDecimalPatternInfo": {"primaryGroupSize": 3, "secondaryGroupSize": 3},
+            "numberingSystemData": null
+        }, 54], ["IntlPhonologicalRules", [], {}, 1496], ["BigPipeExperiments", [], {"link_images_to_pagelets": false}, 907], ["EventConfig", [], {
+            "sampling": {
+                "bandwidth": 0,
+                "play": 0,
+                "playing": 0,
+                "progress": 0,
+                "pause": 0,
+                "ended": 0,
+                "seeked": 0,
+                "seeking": 0,
+                "waiting": 0,
+                "loadedmetadata": 0,
+                "canplay": 0,
+                "selectionchange": 0,
+                "change": 0,
+                "timeupdate": 2000000,
+                "adaptation": 0,
+                "focus": 0,
+                "blur": 0,
+                "load": 0,
+                "error": 0,
+                "message": 0,
+                "abort": 0,
+                "storage": 0,
+                "scroll": 200000,
+                "mousemove": 20000,
+                "mouseover": 10000,
+                "mouseout": 10000,
+                "mousewheel": 1,
+                "MSPointerMove": 10000,
+                "keydown": 0.1,
+                "click": 0.02,
+                "mouseup": 0.02,
+                "__100ms": 0.001,
+                "__default": 5000,
+                "__min": 100,
+                "__interactionDefault": 200,
+                "__eventDefault": 100000
+            },
+            "page_sampling_boost": 1,
+            "interaction_regexes": {
+                "BlueBarAccountChevronMenu": " _5lxs(?: .*)?$",
+                "BlueBarHomeButton": " _bluebarLinkHome__interaction-root(?: .*)?$",
+                "BlueBarProfileLink": " _1k67(?: .*)?$",
+                "ReactComposerSproutMedia": " _1pnt(?: .*)?$",
+                "ReactComposerSproutAlbum": " _1pnu(?: .*)?$",
+                "ReactComposerSproutNote": " _3-9x(?: .*)?$",
+                "ReactComposerSproutLocation": " _1pnv(?: .*)?$",
+                "ReactComposerSproutActivity": " _1pnz(?: .*)?$",
+                "ReactComposerSproutPeople": " _1pn-(?: .*)?$",
+                "ReactComposerSproutLiveVideo": " _5tv7(?: .*)?$",
+                "ReactComposerSproutMarkdown": " _311p(?: .*)?$",
+                "ReactComposerSproutFormattedText": " _mwg(?: .*)?$",
+                "ReactComposerSproutSticker": " _2vri(?: .*)?$",
+                "ReactComposerSproutSponsor": " _5t5q(?: .*)?$",
+                "ReactComposerSproutEllipsis": " _1gr3(?: .*)?$",
+                "ReactComposerSproutContactYourRepresentative": " _3cnv(?: .*)?$",
+                "ReactComposerSproutFunFact": " _2_xs(?: .*)?$",
+                "TextExposeSeeMoreLink": " see_more_link(?: .*)?$",
+                "SnowliftBigCloseButton": "(?: _xlt(?: .*)? _418x(?: .*)?$| _418x(?: .*)? _xlt(?: .*)?$)",
+                "SnowliftPrevPager": "(?: snowliftPager(?: .*)? prev(?: .*)?$| prev(?: .*)? snowliftPager(?: .*)?$)",
+                "SnowliftNextPager": "(?: snowliftPager(?: .*)? next(?: .*)?$| next(?: .*)? snowliftPager(?: .*)?$)",
+                "SnowliftFullScreenButton": "#fbPhotoSnowliftFullScreenSwitch .*",
+                "PrivacySelectorMenu": "(?: _57di(?: .*)? _2wli(?: .*)?$| _2wli(?: .*)? _57di(?: .*)?$)",
+                "ReactComposerFeedXSprouts": " _nh6(?: .*)?$",
+                "SproutsComposerStatusTab": " _sg1(?: .*)?$",
+                "SproutsComposerLiveVideoTab": " _sg1(?: .*)?$",
+                "SproutsComposerAlbumTab": " _sg1(?: .*)?$",
+                "composerAudienceSelector": " _ej0(?: .*)?$",
+                "FeedHScrollAttachmentsPrevPager": " _1qqy(?: .*)?$",
+                "FeedHScrollAttachmentsNextPager": " _1qqz(?: .*)?$",
+                "fbFeedPageletStory": "(?: _5jmm(?: .*)? _5pat(?: .*)? _3lb4(?: .*)?$| _5pat(?: .*)? _5jmm(?: .*)? _3lb4(?: .*)?$| _3lb4(?: .*)? _5jmm(?: .*)? _5pat(?: .*)?$| _5jmm(?: .*)? _3lb4(?: .*)? _5pat(?: .*)?$| _5pat(?: .*)? _3lb4(?: .*)? _5jmm(?: .*)?$| _3lb4(?: .*)? _5pat(?: .*)? _5jmm(?: .*)?$)",
+                "DockChatTabFlyout": " fbDockChatTabFlyout(?: .*)?$",
+                "PrivacyLiteJewel": " _59fc(?: .*)?$",
+                "ActorSelector": " _6vh(?: .*)?$",
+                "LegacyMentionsInput": "(?: ReactLegacyMentionsInput(?: .*)? uiMentionsInput(?: .*)? _2xwx(?: .*)?$| uiMentionsInput(?: .*)? ReactLegacyMentionsInput(?: .*)? _2xwx(?: .*)?$| _2xwx(?: .*)? ReactLegacyMentionsInput(?: .*)? uiMentionsInput(?: .*)?$| ReactLegacyMentionsInput(?: .*)? _2xwx(?: .*)? uiMentionsInput(?: .*)?$| uiMentionsInput(?: .*)? _2xwx(?: .*)? ReactLegacyMentionsInput(?: .*)?$| _2xwx(?: .*)? uiMentionsInput(?: .*)? ReactLegacyMentionsInput(?: .*)?$)",
+                "UFIActionLinksEmbedLink": " _2g1w(?: .*)?$",
+                "UFIPhotoAttachLink": " UFIPhotoAttachLinkWrapper(?: .*)?$",
+                "UFILikeLink": "(?: UFILikeLink(?: .*)? _48-k(?: .*)?$| _48-k(?: .*)? UFILikeLink(?: .*)?$)",
+                "UFIMentionsInputProxy": " _1osa(?: .*)?$",
+                "UFIMentionsInputDummy": " _1osc(?: .*)?$",
+                "UFIOrderingModeSelector": " _3scp(?: .*)?$",
+                "UFIPager": "(?: UFIPagerRow(?: .*)? UFIRow(?: .*)?$| UFIRow(?: .*)? UFIPagerRow(?: .*)?$)",
+                "UFIReplyRow": "(?: UFIReplyRow(?: .*)? UFICommentReply(?: .*)?$| UFICommentReply(?: .*)? UFIReplyRow(?: .*)?$)",
+                "UFIReplySocialSentence": " UFIReplySocialSentenceRow(?: .*)?$",
+                "UFIShareLink": " _5f9b(?: .*)?$",
+                "UFIStickerButton": " UFICommentStickerButton(?: .*)?$",
+                "MentionsInput": " _5yk1(?: .*)?$",
+                "FantaChatTabRoot": " _3_9e(?: .*)?$",
+                "SnowliftViewableRoot": " _2-sx(?: .*)?$",
+                "ReactBlueBarJewelButton": " _5fwr(?: .*)?$",
+                "UFIReactionsDialogLayerImpl": " _1oxk(?: .*)?$",
+                "UFIReactionsLikeLinkImpl": " _4x9_(?: .*)?$",
+                "UFIReactionsLinkImplRoot": " _khz(?: .*)?$",
+                "Reaction": " _iuw(?: .*)?$",
+                "UFIReactionsMenuImpl": " _iu-(?: .*)?$",
+                "UFIReactionsSpatialReactionIconContainer": " UFICommentStickerButton(?: .*)?$",
+                "VideoComponentPlayButton": " _bsl(?: .*)?$",
+                "FeedOptionsPopover": " _b1e(?: .*)?$",
+                "UFICommentLikeCount": " UFICommentLikeButton(?: .*)?$",
+                "UFICommentLink": " _5yxe(?: .*)?$",
+                "ChatTabComposerInputContainer": " _552h(?: .*)?$",
+                "ChatTabHeader": " _15p4(?: .*)?$",
+                "DraftEditor": " _5rp7(?: .*)?$",
+                "ChatSideBarDropDown": " _5vm9(?: .*)?$",
+                "SearchBox": " _539-(?: .*)?$",
+                "ChatSideBarLink": " _55ln(?: .*)?$",
+                "MessengerSearchTypeahead": " _3rh8(?: .*)?$",
+                "NotificationListItem": " _33c(?: .*)?$",
+                "MessageJewelListItem": " messagesContent(?: .*)?$",
+                "Messages_Jewel_Button": " _3eo8(?: .*)?$",
+                "Notifications_Jewel_Button": " _3eo9(?: .*)?$",
+                "snowliftopen": " _342u(?: .*)?$",
+                "NoteTextSeeMoreLink": " _3qd_(?: .*)?$",
+                "fbFeedOptionsPopover": " _1he6(?: .*)?$",
+                "Requests_Jewel_Button": " _3eoa(?: .*)?$",
+                "UFICommentActionLinkAjaxify": " _15-3(?: .*)?$",
+                "UFICommentActionLinkRedirect": " _15-6(?: .*)?$",
+                "UFICommentActionLinkDispatched": " _15-7(?: .*)?$",
+                "UFICommentCloseButton": " _36rj(?: .*)?$",
+                "UFICommentActionsRemovePreview": " _460h(?: .*)?$",
+                "UFICommentActionsReply": " _460i(?: .*)?$",
+                "UFICommentActionsSaleItemMessage": " _460j(?: .*)?$",
+                "UFICommentActionsAcceptAnswer": " _460k(?: .*)?$",
+                "UFICommentActionsUnacceptAnswer": " _460l(?: .*)?$",
+                "UFICommentReactionsLikeLink": " _3-me(?: .*)?$",
+                "UFICommentMenu": " _1-be(?: .*)?$",
+                "UFIMentionsInputFallback": " _289b(?: .*)?$",
+                "UFIMentionsInputComponent": " _289c(?: .*)?$",
+                "UFIMentionsInputProxyInput": " _432z(?: .*)?$",
+                "UFIMentionsInputProxyDummy": " _432-(?: .*)?$",
+                "UFIPrivateReplyLinkMessage": " _14hj(?: .*)?$",
+                "UFIPrivateReplyLinkSeeReply": " _14hk(?: .*)?$",
+                "ChatCloseButton": " _4vu4(?: .*)?$",
+                "ChatTabComposerPhotoUploader": " _13f-(?: .*)?$",
+                "ChatTabComposerGroupPollingButton": " _13f_(?: .*)?$",
+                "ChatTabComposerGames": " _13ga(?: .*)?$",
+                "ChatTabComposerPlan": " _13gb(?: .*)?$",
+                "ChatTabComposerFileUploader": " _13gd(?: .*)?$",
+                "ChatTabStickersButton": " _13ge(?: .*)?$",
+                "ChatTabComposerGifButton": " _13gf(?: .*)?$",
+                "ChatTabComposerEmojiPicker": " _13gg(?: .*)?$",
+                "ChatTabComposerLikeButton": " _13gi(?: .*)?$",
+                "ChatTabComposerP2PButton": " _13gj(?: .*)?$",
+                "ChatTabComposerQuickCam": " _13gk(?: .*)?$",
+                "ChatTabHeaderAudioRTCButton": " _461a(?: .*)?$",
+                "ChatTabHeaderVideoRTCButton": " _461b(?: .*)?$",
+                "ChatTabHeaderOptionsButton": " _461_(?: .*)?$",
+                "ChatTabHeaderAddToThreadButton": " _4620(?: .*)?$",
+                "ReactComposerMediaSprout": " _fk5(?: .*)?$",
+                "UFIReactionsBlingSocialSentenceComments": " _-56(?: .*)?$",
+                "UFIReactionsBlingSocialSentenceSeens": " _2x0l(?: .*)?$",
+                "UFIReactionsBlingSocialSentenceShares": " _2x0m(?: .*)?$",
+                "UFIReactionsBlingSocialSentenceViews": " _-5c(?: .*)?$",
+                "UFIReactionsBlingSocialSentence": " _-5d(?: .*)?$",
+                "UFIReactionsSocialSentence": " _1vaq(?: .*)?$",
+                "VideoFullscreenButton": " _39ip(?: .*)?$",
+                "Tahoe": " _400z(?: .*)?$",
+                "TahoeFromVideoPlayer": " _1vek(?: .*)?$",
+                "TahoeFromVideoLink": " _2-40(?: .*)?$",
+                "TahoeFromPhoto": " _2ju5(?: .*)?$",
+                "FBStoryTrayItem": " _1fvw(?: .*)?$",
+                "Mobile_Feed_Jewel_Button": "#feed_jewel .*",
+                "Mobile_Requests_Jewel_Button": "#requests_jewel .*",
+                "Mobile_Messages_Jewel_Button": "#messages_jewel .*",
+                "Mobile_Notifications_Jewel_Button": "#notifications_jewel .*",
+                "Mobile_Search_Jewel_Button": "#search_jewel .*",
+                "Mobile_Bookmarks_Jewel_Button": "#bookmarks_jewel .*",
+                "Mobile_Feed_UFI_Comment_Button_Permalink": " _l-a(?: .*)?$",
+                "Mobile_Feed_UFI_Comment_Button_Flyout": " _4qeq(?: .*)?$",
+                "Mobile_Feed_UFI_Token_Bar_Flyout": " _4qer(?: .*)?$",
+                "Mobile_Feed_UFI_Token_Bar_Permalink": " _4-09(?: .*)?$",
+                "Mobile_UFI_Share_Button": " _15kr(?: .*)?$",
+                "Mobile_Feed_Photo_Permalink": " _1mh-(?: .*)?$",
+                "Mobile_Feed_Video_Permalink": " _65g_(?: .*)?$",
+                "Mobile_Feed_Profile_Permalink": " _4kk6(?: .*)?$",
+                "ProfileIntroCardAddFeaturedMedia": " _30qr(?: .*)?$"
+            },
+            "interaction_boost": {
+                "SnowliftNextPager": 0.2,
+                "ChatSideBarLink": 2,
+                "MessengerSearchTypeahead": 2,
+                "MessageJewelListItem": 2,
+                "Messages_Jewel_Button": 2.5,
+                "Notifications_Jewel_Button": 1.5,
+                "Tahoe": 30
+            },
+            "manual_instrumentation": false,
+            "profile_eager_execution": true,
+            "disable_heuristic": true,
+            "disable_event_profiler": false
+        }, 1726], ["AdsInterfacesSessionConfig", [], {}, 2393], ["ReactGK", [], {
+            "debugRenderPhaseSideEffects": false,
+            "fiberAsyncScheduling": false,
+            "unmountOnBeforeClearCanvas": true
+        }, 998], ["ServiceWorkerBackgroundSyncGK", [], {"background_sync_sw": false}, 1628], ["URLFragmentPreludeConfig", [], {
+            "incorporateQuicklingFragment": false,
+            "hashtagRedirect": false,
+            "fragBlacklist": ["nonce", "access_token", "oauth_token", "xs", "checkpoint_data"]
+        }, 137], ["AsyncProfilerWorkerResource", [], {
+            "url": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3\/yb\/r\/1reWqdr7x4P.js",
+            "name": "AsyncProfilerWorkerBundle"
+        }, 2779], ["WebWorkerConfig", [], {
+            "logging": {"enabled": false, "config": "WebWorkerLoggerConfig"},
+            "evalWorkerURL": "\/rsrc.php\/v3\/yz\/r\/t4zvM1nFGL5.js"
+        }, 297], ["FbtQTOverrides", [], {
+            "overrides": {
+                "1_75dbca66cd9e13ebfb7b337950346c9f": "Th\u1ebf h\u1ec7 8x - \u0111\u1ea7u 10x",
+                "1_518085df70d1d260e870bc77061aa727": "Th\u1ebf h\u1ec7 cu\u1ed1i 4x - \u0111\u1ea7u 6x",
+                "1_162c87a7c83273f8d4265bc1bdbdbc89": "Nh\u1ea1c rock n\u1eb7ng",
+                "1_db71b04509b58fe0b70055bf916bc73c": "Ng\u01b0\u1eddi kh\u1edfi nghi\u1ec7p",
+                "1_5d1d9754c1100238532327b6f6d44fe5": "N\u01b0\u1edbc hoa",
+                "1_216a0429010f8bb14b43649996f2df95": "B\u00f3ng b\u1ea7u d\u1ee5c",
+                "1_490ff17fb06a51dca70d2458ec652e28": "V\u1ebd tranh b\u1eb1ng c\u1ecd",
+                "1_ef585b2e5ad72ce91e143720bb22b1cc": "C\u1ea3i t\u1ea1o nh\u00e0 c\u1eeda",
+                "1_7b316b78737c86816e37d36cd23aa53b": "Xe lai (s\u1eed d\u1ee5ng hai ngu\u1ed3n n\u0103ng l\u01b0\u1ee3ng)",
+                "1_70bb182b829536ec5f6382bc30605d83": "Xe \u0111i\u1ec7n",
+                "1_4f63ddcde0f6d35d0aa8211b626cd055": "Xe tay ga",
+                "1_47347de5c4cea46e51f6640f3c6aa796": "T\u1eadp gym",
+                "1_4193684dbd70cff7d1a36baec9c692e4": "T\u1eadp t\u1ea1"
+            }
+        }, 551]]);
+        new (require("ServerJS"))().handle({"require": [["TimeSlice"], ["markJSEnabled"], ["lowerDomain"], ["URLFragmentPrelude"], ["BigPipe"], ["Bootloader"], ["ArtilleryOnUntilOffLogging", "disable", [], []]]});
+    }, "ServerJS define", {"root": true})();</script>
+</head>
+<body class="_55jj x1 Locale_vi_VN" dir="ltr">
+<div>
+    <div class="_1q4v">Trang này không khả dụng</div>
+    <div class="_1q4w">Hệ thống đã gặp lỗi.</div>
+</div>
+<script>requireLazy(["Bootloader"], function (Bootloader) {
+    Bootloader.setResourceMap({
+        "fzGKP": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3i7_14\/yw\/l\/vi_VN\/Yl1alUuAXIm.js",
+            "crossOrigin": 1
+        },
+        "QtlpT": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3iBnY4\/yU\/l\/vi_VN\/j3BaQhWvTSx.js",
+            "crossOrigin": 1
+        },
+        "JeUwF": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3\/yj\/r\/1xBaQtxC8oN.js",
+            "crossOrigin": 1
+        },
+        "LIY5h": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3i7Y24\/y5\/l\/vi_VN\/1fFc5TSuH4R.js",
+            "crossOrigin": 1
+        },
+        "iaXyh": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3ikiv4\/yX\/l\/vi_VN\/npA4te5OQLH.js",
+            "crossOrigin": 1
+        },
+        "u0uC6": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3icj34\/yq\/l\/vi_VN\/RuzJ4wPMsbm.js",
+            "crossOrigin": 1
+        },
+        "Wls6U": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3ihLe4\/yK\/l\/vi_VN\/gZ13gw9LVMi.js",
+            "crossOrigin": 1
+        },
+        "pj8Pg": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3iQGt4\/yW\/l\/vi_VN\/WDVcp8KCiD5.js",
+            "crossOrigin": 1
+        },
+        "d25Q1": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3\/yT\/r\/CyzvGI3lhOx.js",
+            "crossOrigin": 1
+        },
+        "oE4Do": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3\/yd\/r\/83S10tp4upZ.js",
+            "crossOrigin": 1
+        },
+        "Klc20": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3\/yS\/r\/fPmoZFDHfot.js",
+            "crossOrigin": 1
+        },
+        "yjnVb": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3iO384\/yo\/l\/vi_VN\/PRjuvOfsrke.js",
+            "crossOrigin": 1
+        },
+        "+ClWy": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3\/y8\/r\/5e9PZVmqSsy.js",
+            "crossOrigin": 1
+        },
+        "VMKqM": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3\/yK\/r\/NAoxcfOJmAW.js",
+            "crossOrigin": 1
+        },
+        "rk22L": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3iFdN4\/yz\/l\/vi_VN\/CbacxI4Vz0S.js",
+            "crossOrigin": 1
+        },
+        "RkIz5": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3i-1_4\/yT\/l\/vi_VN\/GD9wYtrYwzf.js",
+            "crossOrigin": 1
+        },
+        "ZU1ro": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3\/yo\/r\/U0nG4E9Yirs.js",
+            "crossOrigin": 1
+        },
+        "vAwla": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3ik6s4\/yb\/l\/vi_VN\/oItLgK5C6S0.js",
+            "crossOrigin": 1
+        },
+        "WmPot": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3\/yd\/r\/odGFBDWNl5W.js",
+            "crossOrigin": 1
+        },
+        "oeUXN": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3\/y-\/r\/x2QDtn-1GJK.js",
+            "crossOrigin": 1
+        },
+        "ZN6iu": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3\/yN\/r\/B6yonJzBziV.js",
+            "crossOrigin": 1
+        },
+        "lTQVw": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3\/yx\/r\/uNQ8HPsqgQ6.js",
+            "crossOrigin": 1
+        },
+        "QiTN\/": {
+            "type": "js",
+            "src": "https:\/\/static.xx.fbcdn.net\/rsrc.php\/v3\/y2\/r\/dfM-g6pKtAO.js",
+            "crossOrigin": 1
+        }
+    });
+    if (true) {
+        Bootloader.enableBootload({
+            "ExceptionDialog": {
+                "resources": ["fzGKP", "UeGJv", "QtlpT", "JeUwF", "raNLk", "LIY5h", "iaXyh", "u0uC6", "Wls6U", "pj8Pg"],
+                "module": 1
+            },
+            "React": {"resources": ["QtlpT", "fzGKP", "UeGJv"], "module": 1},
+            "AsyncDOM": {"resources": ["UeGJv", "fzGKP", "d25Q1"], "module": 1},
+            "ConfirmationDialog": {"resources": ["UeGJv", "fzGKP", "QtlpT", "oE4Do"], "module": 1},
+            "Dialog": {"resources": ["fzGKP", "QtlpT", "UeGJv", "LIY5h"], "module": 1},
+            "QuickSandSolver": {"resources": ["fzGKP", "UeGJv", "QtlpT", "Klc20", "yjnVb", "+ClWy"], "module": 1},
+            "ReactDOM": {"resources": ["UeGJv", "QtlpT", "fzGKP"], "module": 1},
+            "KeyEventTypedLogger": {"resources": ["fzGKP", "UeGJv", "VMKqM"], "module": 1},
+            "SimpleXUIDialog": {
+                "resources": ["fzGKP", "UeGJv", "QtlpT", "rk22L", "JeUwF", "iaXyh", "raNLk", "LIY5h", "u0uC6", "RkIz5"],
+                "module": 1
+            },
+            "XUIButton.react": {"resources": ["QtlpT", "fzGKP", "UeGJv", "raNLk", "LIY5h"], "module": 1},
+            "XUIDialogButton.react": {"resources": ["QtlpT", "fzGKP", "UeGJv", "raNLk", "LIY5h", "u0uC6"], "module": 1},
+            "CSSFade": {"resources": ["UeGJv", "fzGKP", "QtlpT"], "module": 1},
+            "Banzai": {"resources": ["fzGKP", "UeGJv"], "module": 1},
+            "BanzaiODS": {"resources": ["fzGKP", "UeGJv"], "module": 1},
+            "BanzaiStream": {"resources": ["fzGKP", "UeGJv", "ZU1ro"], "module": 1},
+            "ResourceTimingBootloaderHelper": {"resources": ["vAwla", "fzGKP"], "module": 1},
+            "SnappyCompressUtil": {"resources": ["fzGKP"], "module": 1},
+            "TimeSliceHelper": {"resources": ["UeGJv", "QtlpT", "fzGKP", "WmPot"], "module": 1},
+            "AsyncSignal": {"resources": ["fzGKP"], "module": 1},
+            "XLinkshimLogController": {"resources": ["fzGKP", "oeUXN"], "module": 1},
+            "ErrorSignal": {"resources": ["fzGKP", "UeGJv", "vAwla"], "module": 1},
+            "TimeSliceInteractionsLiteTypedLogger": {"resources": ["fzGKP", "UeGJv", "ZN6iu"], "module": 1},
+            "WebSpeedInteractionsTypedLogger": {"resources": ["fzGKP", "UeGJv", "lTQVw"], "module": 1},
+            "GeneratedPackerUtils": {"resources": ["QiTN\/"], "module": 1},
+            "GeneratedArtilleryUserTimingSink": {"resources": ["QiTN\/"], "module": 1},
+            "BanzaiLogger": {"resources": ["fzGKP", "UeGJv", "QtlpT"], "module": 1}
+        });
+    }
+});</script>
+<script>requireLazy(["InitialJSLoader"], function (InitialJSLoader) {
+    InitialJSLoader.loadOnDOMContentReady([]);
+});</script>
+<script>require("TimeSlice").guard(function () {
+    require("ServerJSDefine").handleDefines([]);
+    require("InitialJSLoader").handleServerJS({"require": [["ScriptPath", "set", [], ["\/zeusgodofthunder\/index.php", "a1f3c513", {"imp_id": "f055437f"}]]]});
+}, "ServerJS define", {"root": true})();</script>
+<!-- BigPipe construction and first response -->
+<script>var bigPipe = new (require("BigPipe"))({"forceFinish": true});</script>
+<script>bigPipe.beforePageletArrive("first_response")</script>
+<script>require("TimeSlice").guard((function () {
+    bigPipe.onPageletArrive({
+        id: "first_response",
+        phase: 0,
+        jsmods: {},
+        is_last: true,
+        allResources: ["XHPBm", "raNLk", "UeGJv"],
+        displayResources: ["XHPBm", "raNLk", "UeGJv"]
+    });
+}), "onPageletArrive first_response", {"root": true, "pagelet": "first_response"})();</script>
+<script>bigPipe.setPageID("6525586650391869475-0");
+CavalryLogger.setPageID("6525586650391869475-0");</script>
+<script>bigPipe.beforePageletArrive("last_response")</script>
+<script>require("TimeSlice").guard((function () {
+    bigPipe.onPageletArrive({
+        id: "last_response",
+        phase: 1,
+        jsmods: {
+            require: [["CavalryLoggerImpl", "startInstrumentation", [], []], ["NavigationMetrics", "setPage", [], [{
+                page: "/zeusgodofthunder/index.php",
+                page_type: "normal",
+                page_uri: "https://www.accountkit.com/unsupportedbrowser",
+                serverLID: "6525586650391869475-0"
+            }]], ["DimensionTracking"], ["HighContrastMode", "init", [], [{
+                isHCM: false,
+                spacerImage: "https://static.xx.fbcdn.net/rsrc.php/v3/y4/r/-PAXP-deijE.gif"
+            }]], ["ErrorLogging"], ["DOMInspector"], ["ClickRefLogger"], ["DetectBrokenProxyCache", "run", [], [0, "c_user"]], ["TimeSlice", "setLogging", [], [false, 0.01]], ["NavigationClickPointHandler"], ["ErrorSignal"], ["Artillery", "disable", [], []], ["ArtilleryOnUntilOffLogging", "disable", [], []], ["ScriptPathLogger", "startLogging", [], []], ["TimeSpentBitArrayLogger", "init", [], []]],
+            define: [["KillabyteProfilerConfig", [], {
+                htmlProfilerModule: null,
+                profilerModule: null,
+                depTypes: {BL: "bl", NON_BL: "non-bl"}
+            }, 1145], ["ArtilleryExperiments", [], {
+                artillery_static_resources_pagelet_attribution: false,
+                artillery_timeslice_compressed_data: false,
+                artillery_miny_client_payload: false,
+                artillery_prolong_page_tracing: false,
+                artillery_navigation_timing_level_2: false,
+                artillery_merge_max_distance_sec: 1,
+                artillery_merge_max_duration_sec: 1
+            }, 1237], ["QuicklingConfig", [], {
+                version: "3667839;0;",
+                sessionLength: 10,
+                inactivePageRegex: "^/(fr/u\\.php|ads/|advertising|ac\\.php|ae\\.php|a\\.php|ajax/emu/(end|f|h)\\.php|badges/|comments\\.php|connect/uiserver\\.php|editalbum\\.php.+add=1|ext/|feeds/|help([/?]|$)|identity_switch\\.php|isconnectivityahumanright/|intern/|login\\.php|logout\\.php|sitetour/homepage_tour\\.php|sorry\\.php|syndication\\.php|webmessenger|/plugins/subscribe|lookback|brandpermissions|gameday|pxlcld|worldcup/map|livemap|work/admin|([^/]+/)?dialog)|legal|\\.pdf$",
+                badRequestKeys: ["nonce", "access_token", "oauth_token", "xs", "checkpoint_data"],
+                logRefreshOverhead: false
+            }, 60], ["JSErrorExtra", [], {"policy:www:no_min_nl": true}, 251], ["JSErrorLoggingConfig", [], {reportInterval: 50}, 2776], ["JSErrorPlatformColumns", [], {}, 255], ["TimeSpentConfig", [], {
+                "0_delay": 0,
+                "0_timeout": 8,
+                delay: 200000,
+                timeout: 64
+            }, 142], ["ImmediateActiveSecondsConfig", [], {sampling_rate: 0}, 423]]
+        },
+        is_last: true,
+        resource_map: {
+            aoQM1: {
+                type: "js",
+                src: "https://static.xx.fbcdn.net/rsrc.php/v3/yR/r/Pn6pCxEzhFh.js",
+                crossOrigin: 1
+            }, "7xDAK": {type: "js", src: "https://static.xx.fbcdn.net/rsrc.php/v3/ys/r/1Qp86X860c6.js", crossOrigin: 1}
+        },
+        allResources: ["XHPBm", "raNLk", "UeGJv", "fzGKP", "vAwla", "aoQM1", "7xDAK"],
+        displayResources: ["XHPBm", "raNLk", "UeGJv"],
+        onafterload: ["CavalryLogger.getInstance(\"6525586650391869475-0\").collectBrowserTiming(window)", "window.CavalryLogger&&CavalryLogger.getInstance().setTimeStamp(\"t_paint\");", "if (window.ExitTime){CavalryLogger.getInstance(\"6525586650391869475-0\").setValue(\"t_exit\", window.ExitTime);};"],
+        the_end: true
+    });
+}), "onPageletArrive last_response", {"root": true, "pagelet": "last_response"})();</script>
+</body>
+</html>
+
